@@ -1,0 +1,29 @@
+# docker-compose.yml
+# 用途：本地開發環境，快速啟動 PostgreSQL 資料庫
+# ⚠️ 僅供本地開發使用，請勿用於 Production 環境
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: gin_react_admin_db
+    restart: unless-stopped
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    environment:
+      # 從 .env 檔案讀取；請先複製 .env.example 為 .env
+      POSTGRES_USER: ${POSTGRES_USER:-admin}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-secret}
+      POSTGRES_DB: ${POSTGRES_DB:-admindb}
+    volumes:
+      # 資料持久化：容器刪除後資料不遺失
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-admin} -d ${POSTGRES_DB:-admindb}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  # 具名 Volume，確保資料持久化
+  postgres_data:
+    driver: local

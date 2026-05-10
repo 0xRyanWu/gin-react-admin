@@ -1,0 +1,319 @@
+basePath: /api/v1
+definitions:
+  controller.CreateArticleRequest:
+    properties:
+      content:
+        example: 文章內容
+        type: string
+      title:
+        example: 文章標題
+        maxLength: 255
+        minLength: 1
+        type: string
+    required:
+    - title
+    type: object
+  controller.LoginRequest:
+    properties:
+      password:
+        example: admin123
+        type: string
+      username:
+        example: admin
+        type: string
+    required:
+    - password
+    - username
+    type: object
+  controller.LoginResponse:
+    properties:
+      expires_in:
+        example: 86400
+        type: integer
+      token:
+        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        type: string
+    type: object
+  controller.UpdateArticleRequest:
+    properties:
+      content:
+        example: 更新後的內容
+        type: string
+      title:
+        example: 更新後的標題
+        maxLength: 255
+        minLength: 1
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact:
+    name: API Support
+  description: Gin + React 前後端分離後台管理系統 API 文件
+  license:
+    name: MIT
+  termsOfService: http://swagger.io/terms/
+  title: 後台管理系統 API
+  version: "1.0"
+paths:
+  /articles:
+    get:
+      description: 分頁查詢文章列表
+      parameters:
+      - default: 1
+        description: 頁碼（預設 1）
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: 每頁筆數（預設 10）
+        in: query
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 文章列表與分頁資訊
+          schema:
+            additionalProperties: true
+            type: object
+        "401":
+          description: 未授權
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: 伺服器錯誤
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: 取得文章列表
+      tags:
+      - articles
+    post:
+      consumes:
+      - application/json
+      description: 建立一篇新文章
+      parameters:
+      - description: 文章內容
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/controller.CreateArticleRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: 新增成功
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: 請求參數錯誤
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: 未授權
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: 伺服器錯誤
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: 新增文章
+      tags:
+      - articles
+  /articles/{id}:
+    delete:
+      description: 依 ID 軟刪除文章（資料保留，僅標記刪除時間）
+      parameters:
+      - description: 文章 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 刪除成功
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "400":
+          description: 無效的 ID
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: 未授權
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: 文章不存在
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: 伺服器錯誤
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: 刪除文章
+      tags:
+      - articles
+    get:
+      description: 依 ID 查詢文章詳情
+      parameters:
+      - description: 文章 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 文章資料
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: 無效的 ID
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: 未授權
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: 文章不存在
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: 取得單篇文章
+      tags:
+      - articles
+    put:
+      consumes:
+      - application/json
+      description: 依 ID 更新文章標題或內容
+      parameters:
+      - description: 文章 ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 更新內容
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/controller.UpdateArticleRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 更新後的文章
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: 請求參數錯誤
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: 未授權
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: 文章不存在
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: 伺服器錯誤
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      security:
+      - BearerAuth: []
+      summary: 更新文章
+      tags:
+      - articles
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: 驗證帳號密碼，成功時回傳 JWT Token
+      parameters:
+      - description: 登入資訊
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/controller.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 登入成功
+          schema:
+            $ref: '#/definitions/controller.LoginResponse'
+        "400":
+          description: 請求參數不完整
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "401":
+          description: 帳號或密碼錯誤
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: 使用者登入
+      tags:
+      - auth
+securityDefinitions:
+  BearerAuth:
+    description: 格式：Bearer {token}
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

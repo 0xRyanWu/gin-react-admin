@@ -1,0 +1,84 @@
+schema: spec-driven
+
+context: |
+  # 專案概述
+  這是一個「前後端分離的後台管理系統模板」，目標是提供高可維護性、安全性強且符合業界最佳實踐的起始模板。
+
+  # 技術棧
+
+  ## 前端
+  - React（最新版，Functional Components & Hooks）
+  - TypeScript（strict mode）
+  - Vite（開發與建構工具，/api proxy → localhost:8080）
+  - React Router v6（路由管理）
+  - Zustand（全域狀態管理，含使用者登入狀態與 JWT Token，localStorage 持久化）
+  - Tailwind CSS v4 + shadcn/ui（UI 元件與樣式系統）
+  - Orval（根據 OpenAPI 規格自動生成 TypeScript 型別與 API 函式）
+
+  ## 後端
+  - Golang（Gin Web Framework）
+  - GORM（ORM，PostgreSQL driver）
+  - JWT（golang-jwt/jwt/v5，HS256，Claims 含 user_id / username / role）
+  - Uber Zap（結構化日誌：dev 模式彩色輸出，GIN_MODE=release 時 JSON 輸出）
+  - Prometheus client_golang（HTTP 請求指標 Counter + Histogram）
+  - swaggo/swag（OpenAPI 自動生成，`make swagger` 指令）
+
+  ## 資料庫與基礎設施
+  - PostgreSQL
+  - Docker Compose（本地環境快速啟動，含資料持久化 Volume）
+
+  # 後端架構規範
+  - 採用 Clean Architecture 分層：Controller → Service → Repository
+  - 標準目錄結構：cmd/, internal/controller, internal/service, internal/repository, internal/model, internal/middleware, pkg/
+  - API 版本前綴：/api/v1
+  - 認證端點：POST /api/v1/auth/login（回傳 JWT Token）
+  - 受保護路由需通過 JWT Middleware 驗證
+  - Middleware 載入順序：ZapLogger → ZapRecovery → PrometheusMiddleware → corsMiddleware → JWTAuth → RequireRole
+
+  # RBAC 角色權限設計
+  - User.Role 欄位（VARCHAR 20，預設 'user'）
+  - 角色常數：RoleSuperAdmin = "superadmin"、RoleUser = "user"
+  - JWT Claims 包含 role 欄位，避免每次請求查詢資料庫
+  - JWTAuth middleware 驗證 token 後注入 role 至 gin.Context
+  - RequireRole(roles ...string) middleware 驗證角色，回傳 403 若不符
+  - 管理員路由群組：/api/v1/admin/*，需 superadmin 角色
+  - 預設帳號：admin / admin123，角色 superadmin
+
+  # Swagger 規範
+  - main.go 加全域 @ 註解（@title、@version、@host、@BasePath、@securityDefinitions）
+  - 每個 controller handler 加 @Summary @Tags @Param @Success @Failure @Security @Router
+  - router.go 需 import _ "gin-react-admin/docs"
+  - 執行 cd backend && make swagger 重新生成 docs/
+
+  # 前端架構規範
+  - 頁面結構：登入頁（/login）+ 後台主佈局（Admin Layout，含 Sidebar 與 Header）
+  - 響應式設計（RWD）：完整支援手機、平板、桌機
+    - 手機端 Sidebar 收折為漢堡選單（Hamburger Menu）
+  - 暗黑模式（Dark Mode）：依 Tailwind CSS + shadcn/ui 規範，支援一鍵切換亮/暗色主題
+    - 登入頁右上角有固定位置的切換按鈕
+  - 路由守衛（Protected Route）：未登入時自動導向 /login
+  - Zustand store 管理 token 與使用者資訊，支援 localStorage 持久化
+
+  # 前端 API 路徑設計
+  - api.ts baseURL = VITE_API_BASE_URL || ''（空字串，使用相對路徑）
+  - 所有路徑包含完整前綴：/api/v1/auth/login 等
+  - Vite proxy：/api → http://localhost:8080（不 rewrite）
+  - VITE_API_BASE_URL 只填 scheme+host（如 http://localhost:8080），不加 /api
+
+  # 開發慣例
+  - 語言：繁體中文（註解、文件）
+  - 關鍵邏輯與架構決策處需加上簡潔的中文註解
+  - Git commit 採用 Conventional Commits 規範
+  - 環境變數統一透過 .env 檔管理，不得硬編碼敏感資訊
+  - Zap 日誌使用 logger.Log（全域），不使用標準庫 log
+  - Prometheus 標籤使用 ctx.FullPath()（低基數），不用 ctx.Request.URL.Path
+
+rules:
+  proposal:
+    - 以繁體中文撰寫
+    - 必須包含「目標」、「技術決策」與「Non-goals（非目標）」章節
+    - 架構圖或目錄結構以 ASCII tree 呈現
+  tasks:
+    - 以繁體中文撰寫任務描述
+    - 每個任務需標明所屬層級（前端 / 後端 / 基礎設施）
+    - 任務拆分以單一功能點為單位，避免過大的複合任務

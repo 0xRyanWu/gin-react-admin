@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="zh-TW">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>後台管理系統</title>
+    <!--
+      防止暗黑模式閃爍（FOUC：Flash of Unstyled Content）
+      在 CSS 載入前，從 localStorage 讀取主題設定並立即套用
+      此腳本需置於 <head> 中，且在任何樣式表之前執行
+    -->
+    <script>
+      (function () {
+        try {
+          var stored = localStorage.getItem('theme-storage');
+          if (stored) {
+            var data = JSON.parse(stored);
+            if (data && data.state && data.state.theme === 'dark') {
+              document.documentElement.classList.add('dark');
+            }
+          }
+        } catch (e) {
+          // 解析失敗時忽略，使用預設亮色主題
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

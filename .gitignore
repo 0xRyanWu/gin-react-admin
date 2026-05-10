@@ -1,0 +1,48 @@
+# =============================================================================
+# .gitignore - 不追蹤敏感資訊與建構產物
+# =============================================================================
+
+# 環境變數（含敏感資訊，絕對不可提交）
+.env
+.env.local
+.env.*.local
+
+# --- 後端 ---
+backend/bin/
+backend/tmp/
+backend/*.exe
+backend/*.test
+backend/vendor/
+# Go 測試覆蓋率報告
+backend/coverage.out
+# Go pprof 效能分析檔案
+*.pprof
+
+# --- 前端 ---
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+frontend/coverage/
+# Orval 自動生成的 API 客戶端（由 npm run generate:api 生成，不追蹤）
+frontend/src/generated/
+
+# --- IDE / 編輯器 ---
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# --- Docker ---
+.docker/
+
+# --- 日誌 ---
+*.log
+
+# --- SSL / TLS 憑證（避免私鑰意外提交）---
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
