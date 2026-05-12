@@ -67,5 +67,6 @@ func (c *AuthController) Login(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{
 		"token":      resp.Token,
 		"expires_in": resp.ExpiresIn,
+		"role":       resp.Role,
 	})
 }

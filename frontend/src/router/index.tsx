@@ -7,15 +7,17 @@ import { AdminLayout } from '@/components/layout/AdminLayout'
 import { ProtectedRoute, GuestRoute } from './ProtectedRoute'
 import LoginPage from '@/pages/auth/LoginPage'
 import DashboardPage from '@/pages/dashboard/DashboardPage'
+import ArticlesPage from '@/pages/articles/ArticlesPage'
+import SchedulerPage from '@/pages/scheduler/SchedulerPage'
+import AdminOverviewPage from '@/pages/admin/AdminOverviewPage'
+import UsersPage from '@/pages/users/UsersPage'
 
 export const router = createBrowserRouter([
   {
-    // 根路由：重新導向至 /dashboard
     path: '/',
     element: <Navigate to="/dashboard" replace />,
   },
   {
-    // 公開路由：已登入使用者將被重新導向至 /dashboard
     path: '/login',
     element: (
       <GuestRoute>
@@ -24,7 +26,6 @@ export const router = createBrowserRouter([
     ),
   },
   {
-    // 受保護路由：未登入時重新導向至 /login
     path: '/dashboard',
     element: (
       <ProtectedRoute>
@@ -33,13 +34,25 @@ export const router = createBrowserRouter([
     ),
     children: [
       {
-        // /dashboard 預設顯示儀表板頁面
         index: true,
         element: <DashboardPage />,
       },
-      // 可在此擴展更多後台頁面，例如：
-      // { path: 'articles', element: <ArticlesPage /> },
-      // { path: 'users', element: <UsersPage /> },
+      {
+        path: 'articles',
+        element: <ArticlesPage />,
+      },
+      {
+        path: 'scheduler',
+        element: <SchedulerPage />,
+      },
+      {
+        path: 'admin',
+        element: <AdminOverviewPage />,
+      },
+      {
+        path: 'users',
+        element: <UsersPage />,
+      },
     ],
   },
 ])

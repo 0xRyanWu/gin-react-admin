@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "gin-react-admin.fullname" . }}-backend
+  labels:
+    {{- include "gin-react-admin.labels" . | nindent 4 }}
+    {{- include "gin-react-admin.backend.selectorLabels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.backend.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "gin-react-admin.backend.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "gin-react-admin.backend.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: backend
+          image: "{{ .Values.backend.image.repository }}:{{ .Values.backend.image.tag }}"
+          imagePullPolicy: {{ .Values.backend.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.backend.service.port }}
+              protocol: TCP
+          env:
+            - name: GIN_MODE
+              value: {{ .Values.backend.env.GIN_MODE | quote }}
+            - name: PORT
+              value: {{ .Values.backend.env.PORT | quote }}
+            - name: JWT_EXPIRE_HOURS
+              value: {{ .Values.backend.env.JWT_EXPIRE_HOURS | quote }}
+            - name: DB_DSN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "gin-react-admin.fullname" . }}-backend-secret
+                  key: DB_DSN
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "gin-react-admin.fullname" . }}-backend-secret
+                  key: JWT_SECRET
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: {{ .Values.backend.service.port }}
+            initialDelaySeconds: 10
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: {{ .Values.backend.service.port }}
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          resources:
+            {{- toYaml .Values.backend.resources | nindent 12 }}

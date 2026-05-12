@@ -14,7 +14,10 @@ import (
 type UserRepository interface {
 	FindByUsername(username string) (*model.User, error)
 	FindByID(id uint) (*model.User, error)
+	FindAll(page, pageSize int) ([]model.User, int64, error)
 	Create(user *model.User) error
+	Update(user *model.User) error
+	Delete(id uint) error
 }
 
 // userRepository 實作 UserRepository
@@ -47,7 +50,32 @@ func (r *userRepository) FindByID(id uint) (*model.User, error) {
 	return &user, nil
 }
 
+// FindAll 查詢所有使用者（分頁），回傳資料列表與總筆數
+func (r *userRepository) FindAll(page, pageSize int) ([]model.User, int64, error) {
+	var users []model.User
+	var total int64
+
+	offset := (page - 1) * pageSize
+	if err := r.db.Model(&model.User{}).Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+	if err := r.db.Offset(offset).Limit(pageSize).Order("id asc").Find(&users).Error; err != nil {
+		return nil, 0, err
+	}
+	return users, total, nil
+}
+
 // Create 新增使用者
 func (r *userRepository) Create(user *model.User) error {
 	return r.db.Create(user).Error
+}
+
+// Update 更新使用者資料（只更新非零值欄位）
+func (r *userRepository) Update(user *model.User) error {
+	return r.db.Save(user).Error
+}
+
+// Delete 刪除使用者（hard delete）
+func (r *userRepository) Delete(id uint) error {
+	return r.db.Delete(&model.User{}, id).Error
 }

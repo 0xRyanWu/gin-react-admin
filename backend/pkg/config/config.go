@@ -15,10 +15,11 @@ import (
 
 // Config 儲存所有應用程式設定
 type Config struct {
-	Port            string
-	DBdsn           string
-	JWTSecret       string
-	JWTExpireHours  int
+	Port           string
+	DBdsn          string
+	JWTSecret      string
+	JWTExpireHours int
+	RedisAddr      string // Redis 連線位址（asynq 使用）
 }
 
 // Load 讀取環境變數並回傳 Config
@@ -58,6 +59,7 @@ func Load() *Config {
 		DBdsn:          getEnvOrDefault("DB_DSN", ""),
 		JWTSecret:      jwtSecret,
 		JWTExpireHours: expireHours,
+		RedisAddr:      getEnvOrDefault("REDIS_ADDR", "localhost:6379"),
 	}
 }
 

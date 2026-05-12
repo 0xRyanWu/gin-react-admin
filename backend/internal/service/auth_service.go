@@ -18,6 +18,7 @@ import (
 type LoginResponse struct {
 	Token     string `json:"token"`
 	ExpiresIn int    `json:"expires_in"` // Token 有效秒數
+	Role      string `json:"role"`
 }
 
 // AuthService 定義身份驗證業務介面
@@ -67,6 +68,7 @@ func (s *authService) Login(username, password string) (*LoginResponse, error) {
 	return &LoginResponse{
 		Token:     token,
 		ExpiresIn: s.expireHours * 3600,
+		Role:      string(user.Role),
 	}, nil
 }
 

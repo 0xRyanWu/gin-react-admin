@@ -1,6 +1,10 @@
 # docker-compose.yml
-# 用途：本地開發環境，快速啟動 PostgreSQL 資料庫
+# 用途：全端容器化啟動（Production-like 環境）
 # ⚠️ 僅供本地開發使用，請勿用於 Production 環境
+#
+# 啟動方式：
+#   僅啟動基礎設施：docker compose up postgres redis -d
+#   啟動全端：      docker compose up --build
 
 services:
   postgres:
@@ -10,12 +14,10 @@ services:
     ports:
       - "${POSTGRES_PORT:-5432}:5432"
     environment:
-      # 從 .env 檔案讀取；請先複製 .env.example 為 .env
       POSTGRES_USER: ${POSTGRES_USER:-admin}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-secret}
       POSTGRES_DB: ${POSTGRES_DB:-admindb}
     volumes:
-      # 資料持久化：容器刪除後資料不遺失
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-admin} -d ${POSTGRES_DB:-admindb}"]
@@ -23,7 +25,50 @@ services:
       timeout: 5s
       retries: 5
 
+  redis:
+    image: public.ecr.aws/docker/library/redis:7-alpine
+    container_name: gin_react_admin_redis
+    restart: unless-stopped
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: gin_react_admin_backend
+    restart: unless-stopped
+    ports:
+      - "${PORT:-8080}:8080"
+    environment:
+      PORT: ${PORT:-8080}
+      DB_DSN: host=postgres user=${POSTGRES_USER:-admin} password=${POSTGRES_PASSWORD:-secret} dbname=${POSTGRES_DB:-admindb} port=5432 sslmode=disable TimeZone=Asia/Taipei
+      JWT_SECRET: ${JWT_SECRET:-please_change_this_to_a_strong_random_secret_key_min_32_chars}
+      JWT_EXPIRE_HOURS: ${JWT_EXPIRE_HOURS:-24}
+      GIN_MODE: ${GIN_MODE:-release}
+      REDIS_ADDR: redis:6379
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: gin_react_admin_frontend
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
 volumes:
-  # 具名 Volume，確保資料持久化
   postgres_data:
     driver: local

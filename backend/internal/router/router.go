@@ -22,6 +22,8 @@ func SetupRouter(
 	cfg *config.Config,
 	authCtrl *controller.AuthController,
 	articleCtrl *controller.ArticleController,
+	schedulerCtrl *controller.SchedulerController,
+	userCtrl *controller.UserController,
 ) *gin.Engine {
 	// 使用 gin.New() 取代 gin.Default()，手動掛載 Zap Logger 與 Recovery
 	r := gin.New()
@@ -80,6 +82,20 @@ func SetupRouter(
 						"user":    ctx.GetString("username"),
 					})
 				})
+
+				// 排程管理
+				admin.GET("/jobs", schedulerCtrl.ListJobs)
+				admin.POST("/jobs/:type/trigger", schedulerCtrl.TriggerJob)
+
+				// 使用者管理
+				users := admin.Group("/users")
+				{
+					users.GET("", userCtrl.List)
+					users.POST("", userCtrl.Create)
+					users.GET("/:id", userCtrl.GetByID)
+					users.PUT("/:id", userCtrl.Update)
+					users.DELETE("/:id", userCtrl.Delete)
+				}
 			}
 		}
 	}

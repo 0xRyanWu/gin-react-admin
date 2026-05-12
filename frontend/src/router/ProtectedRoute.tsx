@@ -13,17 +13,12 @@ interface ProtectedRouteProps {
 
 /**
  * ProtectedRoute：確保使用者已登入才能訪問受保護頁面
- * 使用方式：
- *   <Route element={<ProtectedRoute><AdminLayout /></ProtectedRoute>}>
- *     <Route path="dashboard" element={<DashboardPage />} />
- *   </Route>
  */
 export function ProtectedRoute({ children, redirectTo = '/login' }: ProtectedRouteProps) {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated)
   const location = useLocation()
 
   if (!isAuthenticated) {
-    // 記錄原始路徑，登入後可還原導向
     return <Navigate to={redirectTo} state={{ from: location }} replace />
   }
 
@@ -32,12 +27,37 @@ export function ProtectedRoute({ children, redirectTo = '/login' }: ProtectedRou
 
 /**
  * GuestRoute：已登入使用者不應訪問的頁面（如登入頁）
- * 已登入時自動導向 /dashboard
  */
 export function GuestRoute({ children }: { children: React.ReactNode }) {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated)
 
   if (isAuthenticated) {
+    return <Navigate to="/dashboard" replace />
+  }
+
+  return <>{children}</>
+}
+
+/**
+ * RoleProtectedRoute：限制特定角色才能訪問的頁面
+ * 未登入 → /login；角色不符 → /dashboard（403）
+ */
+export function RoleProtectedRoute({
+  children,
+  allowedRoles,
+}: {
+  children: React.ReactNode
+  allowedRoles: string[]
+}) {
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated)
+  const user = useAuthStore((state) => state.user)
+  const location = useLocation()
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" state={{ from: location }} replace />
+  }
+
+  if (!user?.role || !allowedRoles.includes(user.role)) {
     return <Navigate to="/dashboard" replace />
   }
 

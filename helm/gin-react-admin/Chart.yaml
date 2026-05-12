@@ -1,0 +1,13 @@
+apiVersion: v2
+name: gin-react-admin
+description: Gin + React 全端後台管理系統
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+keywords:
+  - gin
+  - react
+  - admin
+  - rbac
+maintainers:
+  - name: gin-react-admin

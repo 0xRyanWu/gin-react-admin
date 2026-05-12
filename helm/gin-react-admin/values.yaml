@@ -1,0 +1,63 @@
+# helm/gin-react-admin/values.yaml
+# 全域預設值，可透過 --set 或 -f custom.yaml 覆蓋
+
+# ── 後端 ─────────────────────────────────────────────────────────────────────
+backend:
+  replicaCount: 1
+
+  image:
+    repository: gin-react-admin-backend
+    pullPolicy: IfNotPresent
+    tag: "latest"
+
+  service:
+    type: ClusterIP
+    port: 8080
+
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 256Mi
+
+  env:
+    GIN_MODE: release
+    JWT_EXPIRE_HOURS: "24"
+    PORT: "8080"
+
+  # 機密資訊建議透過 Kubernetes Secret 提供
+  # 以下僅為範例預設值，部署前請務必覆蓋
+  secret:
+    DB_DSN: "host=postgres user=admin password=secret dbname=admindb port=5432 sslmode=disable"
+    JWT_SECRET: "please_change_this_to_a_strong_random_secret_key_min_32_chars"
+
+# ── 前端 ─────────────────────────────────────────────────────────────────────
+frontend:
+  replicaCount: 1
+
+  image:
+    repository: gin-react-admin-frontend
+    pullPolicy: IfNotPresent
+    tag: "latest"
+
+  service:
+    type: ClusterIP
+    port: 80
+
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 128Mi
+
+# ── Ingress（選用） ───────────────────────────────────────────────────────────
+ingress:
+  enabled: false
+  className: "nginx"
+  host: admin.example.com
+  tls: false
+  tlsSecretName: ""

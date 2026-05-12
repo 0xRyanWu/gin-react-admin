@@ -70,6 +70,9 @@ import type {
   ArticleListResponse,
   CreateArticleRequest,
   UpdateArticleRequest,
+  UserListResponse,
+  CreateUserRequest,
+  UpdateUserRequest,
 } from '@/types'
 
 export const authApi = {
@@ -88,4 +91,24 @@ export const articleApi = {
     api.put<{ data: Article }>(`/api/v1/articles/${id}`, data),
   delete: (id: number) =>
     api.delete<{ message: string }>(`/api/v1/articles/${id}`),
+}
+
+export const schedulerApi = {
+  listJobs: () =>
+    api.get<{ data: import('@/types').JobDefinition[] }>('/api/v1/admin/jobs'),
+  triggerJob: (type: string) =>
+    api.post<{ message: string; type: string }>(`/api/v1/admin/jobs/${encodeURIComponent(type)}/trigger`),
+}
+
+export const userApi = {
+  list: (page = 1, pageSize = 10) =>
+    api.get<UserListResponse>(`/api/v1/admin/users?page=${page}&page_size=${pageSize}`),
+  getById: (id: number) =>
+    api.get<{ data: import('@/types').User }>(`/api/v1/admin/users/${id}`),
+  create: (data: CreateUserRequest) =>
+    api.post<{ data: import('@/types').User }>('/api/v1/admin/users', data),
+  update: (id: number, data: UpdateUserRequest) =>
+    api.put<{ data: import('@/types').User }>(`/api/v1/admin/users/${id}`, data),
+  delete: (id: number) =>
+    api.delete<{ message: string }>(`/api/v1/admin/users/${id}`),
 }

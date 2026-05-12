@@ -2,6 +2,12 @@
 # .gitignore - 不追蹤敏感資訊與建構產物
 # =============================================================================
 
+# .github
+.github/skills/
+.github/prompts/
+.github/workflows/
+openspec/
+
 # 環境變數（含敏感資訊，絕對不可提交）
 .env
 .env.local

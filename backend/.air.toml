@@ -1,0 +1,27 @@
+# backend/.air.toml
+# Air 熱重載設定（僅開發環境使用）
+# 文件：https://github.com/air-verse/air
+
+root = "."
+tmp_dir = "/tmp/air"
+
+[build]
+  cmd = "go build -o /tmp/air/server ./cmd/server/main.go"
+  bin = "/tmp/air/server"
+  delay = 1000            # 偵測到變更後等待 1s 再重新建構（防抖）
+  exclude_dir = ["docs", "tmp"]
+  include_ext = ["go"]
+  kill_delay = "3s"
+  log = "build-errors.log"
+
+[log]
+  time = false
+
+[color]
+  main = "yellow"
+  watcher = "cyan"
+  build = "blue"
+  runner = "green"
+
+[misc]
+  clean_on_exit = true

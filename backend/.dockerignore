@@ -1,0 +1,6 @@
+# backend/.dockerignore
+bin
+.env
+.env.local
+.git
+*.md
